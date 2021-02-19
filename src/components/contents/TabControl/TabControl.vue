@@ -1,12 +1,11 @@
 <template>
 <div class="tabControl">
-  <div v-for="(item,index) in titles" :key="item"
+  <div v-for="(item,index) in titles" :key="index"
        class="tabControItem"
        :class="{active:index === currentIndex}"
         @click="itemClick(index)">
     <span>{{item}}</span>
   </div>
-
 </div>
 </template>
 
@@ -29,6 +28,7 @@ export default {
   methods:{
     itemClick(index){
       this.currentIndex = index;
+      this.$emit('tabClick',index)
     }
   }
 
@@ -39,7 +39,8 @@ export default {
 .tabControl{
   display: flex;
   text-align: center;
-  background-color: #eeeeee;
+  background-color: #ffffff;
+  z-index:10
 }
 .tabControItem{
   flex:1;
