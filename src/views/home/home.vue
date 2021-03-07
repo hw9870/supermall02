@@ -1,12 +1,18 @@
 <template>
 <div id="home" >
-  <navBar class="homeNav">购物街</navBar>
-  <Scroll class="content" ref="scroll" :probe-type="3" @scroll="contentScroll" :pull-up-load="true" @pullingUp="learnMore">
-    <HomeSwiper :banners="banners"></HomeSwiper>
+  <navBar  class="homeNav">
+    <div slot="center"> 购物街</div>
+  </navBar>
+  <TabControl  :titles="['流行','新款','精选']"
+              @tabClick="tabClick" ref="talControl1" class="tabControl" v-show="isTabFixed"></TabControl>
+  <Scroll class="content" ref="scroll" :probe-type="3" @scroll="contentScroll"
+          :pull-up-load="true" @pullingUp="learnMore">
+    <HomeSwiper :banners="banners" @swiperImgLoad="swiperImgLoad"
+    ></HomeSwiper>
     <RecommendView :recommends="recommends"></RecommendView>
     <featureViews></featureViews>
-    <TabControl class="TabControl" :titles="['流行','新款','精选']"
-                @tabClick="tabClick"></TabControl>
+    <TabControl  :titles="['流行','新款','精选']"
+                @tabClick="tabClick" ref="talControl2" ></TabControl>
     <goodList :goods="showGood"></goodList>
   </Scroll>
   <backtop @click.native="btnClick" v-show="isshowbacktop"></backtop>
@@ -15,18 +21,16 @@
 </template>
 
 <script>
-import navBar from "components/common/navbar/NavBar";
+import navBar from "@/components/common/navbar/NavBar";
 import HomeSwiper from "@/views/home/childComps/HomeSwiper";
 import RecommendView from "@/views/home/childComps/RecommendView";
-
 import featureViews from "./childComps/FeatureView"
-
 import TabControl from "@/components/contents/TabControl/TabControl";
 import goodList from "@/components/contents/goods/goodList";
 import Scroll from "@/components/common/Scroll/Scroll";
 import backtop from "@/components/contents/backtop/backtop";
-
 import {getHomeMultiData,getHomeGoods} from "network/home";
+import {debounce} from "common/untils";
 export default {
   name: "home",
   components:{
@@ -49,8 +53,11 @@ export default {
         'new':{page:0,list:[ ]},
         'sell':{page:0,list:[ ]},
       },
-      currentType:'pop',
-      isshowbacktop:false,
+      currentType: 'pop',
+      isshowbacktop: false,
+      tabOffsetTop: 0,
+      isTabFixed:false,
+      saveY:0
     }
   },
   computed:{
@@ -58,7 +65,20 @@ export default {
       return this.goods[this.currentType].list
     }
   },
+  // destroyed() {
+  //   console.log('destroy');
+  // },
+  activated() {
+    // console.log("activated"+this.saveY);
+    // this.$refs.scroll.refresh()
+    this.$refs.scroll.scrollTo(0,this.saveY,100)
+    this.$refs.scroll.refresh()
 
+  },
+  deactivated() {
+    this.saveY = this.$refs.scroll.Scroll.y;
+    // console.log("deactivated"+this.saveY);
+  },
   created() {
     //1、请求轮播图多个数据
     this.getHomeMultiData();
@@ -72,11 +92,11 @@ export default {
 
   },
   mounted() {
-    //3、图片加载完成监听
-    this.$bus.$on('itemimgload',()=>{
-      // console.log('====');
-      this.$refs.scroll.refresh()
-    })
+    //1、图片加载完成监听
+    let refresh= debounce (this.$refs.scroll.refresh,500);
+    this.$bus.$on('homeitemimgload', () => {
+        refresh()
+      });
   },
 
   methods:{
@@ -96,10 +116,16 @@ export default {
             this.currentType='sell';
             break;
         }
+        this.$refs.talControl1.currentIndex = index
+        this.$refs.talControl2.currentIndex = index
       },
       contentScroll(position){
         // console.log(position);
+        //1、完成backtop的显示
         this.isshowbacktop = (-position.y ) > 1000;
+      //  2、完成吸顶
+        this.isTabFixed = (-position.y) > this.tabOffsetTop
+
       },
       btnClick(){
         this.$refs.scroll.scrollTo(0,0,500);
@@ -107,15 +133,21 @@ export default {
       learnMore(){
         // console.log("上拉加载更多");
         this.getHomeGoods(this.currentType)
-        // this.$refs.scroll.Scroll.finishPullUp()
+        this.$refs.scroll.Scroll.finishPullUp()
         // this.$refs.scroll.Scroll.refresh()
       },
+      swiperImgLoad(){
+        // console.log("+++++");
+        //1、完成吸顶效果
+        // console.log(this.$refs.talControl.$el.offsetTop);
+        this.tabOffsetTop = this.$refs.talControl2.$el.offsetTop
+    },
     /*
       网络请求相关
        */
       getHomeMultiData(){
         getHomeMultiData().then(res => {
-        console.log(res);
+        // console.log(res);
         // this.data = res;
         this.banners=res.data.banner.list;
         this.recommends=res.data.recommend.list;
@@ -152,11 +184,11 @@ export default {
   left: 0;
   right: 0;
   top: 0;
-  z-index: 9;
+  /*z-index: 9;*/
 }
 .TabControl{
-  position:sticky;
-  top:44px
+  /*position:sticky;*/
+  /*top:44px*/
 }
 .content{
   /*height: calc(100% - 93px);*/
@@ -169,4 +201,15 @@ export default {
   left:0;
 
 }
+.tabControl{
+  position: relative;
+  z-index: 9;
+}
+/*.fixed{*/
+/*  position: fixed;*/
+/*  left: 0;*/
+/*  right: 0;*/
+/*  top:44px;*/
+
+/*}*/
 </style>

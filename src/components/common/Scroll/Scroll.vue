@@ -37,9 +37,9 @@ export default {
       // console.log(position);
       this.$emit('scroll',position)
     });
-    console.log(this.Scroll);
+    // console.log(this.Scroll);
     this.Scroll.on('pullingUp',()=>{
-      // console.log('上拉加载更多');
+      console.log('上拉加载更多');
       this.$emit('pullingUp')
 
     })
@@ -50,6 +50,7 @@ export default {
     },
     refresh(){
       this.Scroll && this.Scroll.refresh()
+      // console.log('====');
     }
   }
 }

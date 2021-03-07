@@ -1,6 +1,6 @@
 <template>
-<div class="goodListItem">
-<img :src="goodList.show.img" alt=" " @load="imgLoad">
+<div class="goodListItem" @click="itemClick">
+<img :src="showImage" alt=" " @load="imgLoad">
   <div class="goods-info">
     <p>{{goodList.title}}</p>
     <span class="price">{{goodList.price}}</span>
@@ -8,10 +8,9 @@
   </div>
 </div>
 </template>
-
 <script>
 export default {
-name: "goodListItem",
+  name: "goodListItem",
   props:{
   goodList:{
     type:Object,
@@ -20,15 +19,29 @@ name: "goodListItem",
       }
     }
   },
+  computed:{
+    showImage(){
+      return  this.goodList.image || this.goodList.show.img
+      // return   this.goodList.show.img || this.goodList.image
+    }
+  },
   methods:{
     imgLoad(){
       // console.log('imgLoad');
-      this.$bus.$emit('itemimgload')
+      if(this.$route.path.indexOf('/home')){
+        this.$bus.$emit('homeitemimgload')
+      }
+      else if(this.$route.path.indexOf('/detail')){
+        this.$bus.$emit('detailitmeload')
+      }
+
+    },
+    itemClick(){
+     this.$router.push('/detail/'+this.goodList.iid)
     }
   }
 }
 </script>
-
 <style scoped>
 .goodListItem {
   padding-bottom: 40px;

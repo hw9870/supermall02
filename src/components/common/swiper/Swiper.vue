@@ -7,8 +7,7 @@
     </slot>
     <div class="indicator">
       <slot name="indicator" v-if="showIndicator && slideCount>1">
-        <div v-for="(item, index) in slideCount" class="indi-item"
-             :class="{active: index === currentIndex-1}" :key="index"></div>
+        <div v-for="(item, index) in slideCount" class="indi-item" :class="{active: index === currentIndex-1}" :key="index"></div>
       </slot>
     </div>
   </div>
@@ -24,7 +23,7 @@ export default {
     },
     animDuration: {
       type: Number,
-      default: 300
+      default: 200
     },
     moveRatio: {
       type: Number,
@@ -51,7 +50,7 @@ export default {
 
       // 2.开启定时器
       this.startTimer();
-    }, 100)
+    }, 1000)
   },
   methods: {
     /**
@@ -163,10 +162,11 @@ export default {
       // 2.设置当前的位置
       this.setTransform(moveDistance);
     },
-    //166省略了e
-    touchEnd: function () {
+
+    touchEnd: function (e) {
       // 1.获取移动的距离
       let currentMove = Math.abs(this.distance);
+      console.log(e);
 
       // 2.判断最终的距离
       if (this.distance === 0) {
